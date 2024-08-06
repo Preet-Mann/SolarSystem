@@ -1,0 +1,19 @@
+import rebound
+import matplotlib.pyplot as plt
+
+sim = rebound.Simulation()
+sim.add("Sun")
+sim.add("Mercury")
+sim.add(["Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"])
+ops = rebound.OrbitPlotSet(sim)
+
+for i, ax in enumerate(ops.fig.axes):
+    if i == 0:
+        ax.set_xlabel('Distance (AU)')
+        ax.set_ylabel('Distance (AU)')
+    else:
+        ax.set_xlabel('')
+        ax.set_ylabel('')
+plt.show()
+
+
