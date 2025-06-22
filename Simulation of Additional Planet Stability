@@ -1,0 +1,86 @@
+import rebound
+import matplotlib.pyplot as plt
+
+def simulate_with_and_without_new_planet(duration, num_steps):
+    # Create two simulations: one with the new planet and one without
+    sim_with = rebound.Simulation()
+    sim_without = rebound.Simulation()
+    planets = ["Sun", "Mercury", "Venus", "Earth", "Mars"]
+    names_with = planets + ["New Planet"]
+    names_without = planets[:]
+
+    for planet in planets:
+        sim_with.add(planet)
+        sim_without.add(planet)
+
+    # Define and add the new planet only to sim_with
+    new_planet_mass = 0.1  # Mass of the new planet, roughly equivalent to Earth's mass in solar masses
+    new_planet_distance = 1.2  # Distance from the Sun in AU
+    new_planet_velocity = [0, 5.925679298607579, 0.21008492512752638]
+    sim_with.add(m=new_planet_mass, x=new_planet_distance, vy=new_planet_velocity[1])
+
+    # Function to record distances
+    def record_distances(sim, num_particles):
+        distances_x = [[] for _ in range(num_particles)]
+        distances_y = [[] for _ in range(num_particles)]
+        distances_z = [[] for _ in range(num_particles)]
+        times = []
+        for i in range(num_steps):
+            sim.integrate(sim.t + duration / num_steps)
+            times.append(sim.t)
+            for j, particle in enumerate(sim.particles):
+                distances_x[j].append(particle.x)
+                distances_y[j].append(particle.y)
+                distances_z[j].append(particle.z)
+        return times, distances_x, distances_y, distances_z
+
+    # Run both simulations
+    times_with, dx_with, dy_with, dz_with = record_distances(sim_with, len(names_with))
+    times_without, dx_without, dy_without, dz_without = record_distances(sim_without, len(names_without))
+
+    # Plotting results
+    fig, axs = plt.subplots(3, 2, figsize=(12, 18), sharex='col')
+
+    # Function to plot each axis
+    def plot_axis(ax, times, distances, names, axis_name):
+        for i in range(len(names)):
+            # Skip plotting the Sun's orbit line
+            if names[i] == "Sun":
+                continue
+            ax.plot(times, distances[i], label=f'{names[i]} ({axis_name})')
+        ax.set_xlabel('Time (years)')
+        ax.set_ylabel(f'Distance from Sun ({axis_name}-axis)')
+        ax.legend()
+        ax.grid(True)
+
+    # Plot results for simulation with the new planet
+    plot_axis(axs[0, 0], times_with, dx_with, names_with, 'X')
+    plot_axis(axs[1, 0], times_with, dy_with, names_with, 'Y')
+    plot_axis(axs[2, 0], times_with, dz_with, names_with, 'Z')
+    axs[0, 0].set_title('With New Planet')
+
+    # Plot results for simulation without the new planet
+    plot_axis(axs[0, 1], times_without, dx_without, names_without, 'X')
+    plot_axis(axs[1, 1], times_without, dy_without, names_without, 'Y')
+    plot_axis(axs[2, 1], times_without, dz_without, names_without, 'Z')
+    axs[0, 1].set_title('Without New Planet')
+
+    plt.tight_layout()
+    plt.show()
+
+# Run the comparison simulation and plot results over a 5-year period
+simulate_with_and_without_new_planet(duration=10, num_steps=1000)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
