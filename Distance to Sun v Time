@@ -1,0 +1,48 @@
+import rebound
+import numpy as np
+import matplotlib.pyplot as plt
+
+sim = rebound.Simulation()
+sim.units = ['mearth', 'year', 'AU']
+sim.add(m=330000)  # Sun
+
+# Planetary data (Mass, Eccentricity, Orbital Period)
+planets = [
+    ("Mercury", 0.055, 0.2056, 0.2408467),
+    ("Venus", 0.815, 0.0068, 0.61519726),
+    ("Earth", 1.0, 0.0167, 1.0),
+    ("Mars", 0.107, 0.0934, 1.8808158),
+    ("Jupiter", 317.8, 0.0484, 11.862615),
+    ("Saturn", 95.2, 0.0556, 29.447498),
+    ("Uranus", 14.5, 0.0472, 84.016846),
+    ("Neptune", 17.1, 0.0086, 164.79132),
+]
+
+# Add planets to simulation
+for name, mass, eccentricity, period in planets:
+    sim.add(m=mass, e=eccentricity, P=period)
+
+# Add new body
+sim.add(m=1.0, a=1.2)  # Mass=1.0 (arbitrary), semi-major axis=1.2 AU
+
+times = np.linspace(0, 10, 1000)  # Time array from 0 to 10 years with 1000 steps
+distances = np.zeros((len(planets)+1, len(times)))  # Array to store distances to the Sun
+
+for i, t in enumerate(times):
+    sim.integrate(t)
+    for j, particle in enumerate(sim.particles[1:]):  # Exclude the Sun
+        distances[j, i] = np.sqrt(particle.x**2 + particle.y**2)  # Calculate distance to the Sun
+
+# Plot distances over time
+plt.figure(figsize=(10, 6))
+for i in range(len(planets)):
+    plt.plot(times, distances[i], label=planets[i][0])
+
+plt.plot(times, distances[-1], color='black', linestyle='--', label='New Body')  # New body
+plt.xlabel('Time (years)')
+plt.ylabel('Distance to Sun (AU)')
+plt.title('Distance to Sun vs Time')
+plt.legend()
+plt.grid(True)
+plt.show()
+
